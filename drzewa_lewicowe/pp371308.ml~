@@ -1,0 +1,41 @@
+(*
+Drzewa lewicowe
+Przemysław Perkowski
+Code review - Paweł Perzyna
+*)
+
+type 'a queue = Null | Node of  'a * int * 'a queue * 'a queue
+(* kolejne wartości krotki to odpowiednio: wartość wierzchołka, 
+wysokość prawego poddrzewa, lewy potomek, prawy potomek *)
+
+exception Empty
+
+let empty = Null
+
+(* wysokość drzewa pustego - kwestia umowna, wybrałem 0 *)
+let height x =
+   match x with 
+   | Node ( _, w, _, _) -> w
+   | _ -> 0 
+
+let rec join x y =
+   match (x, y) with
+   | (Null, _) -> y
+   | (_, Null) -> x
+   | (Node (f, _, f_left, f_right), Node (g, _, _, _)) -> 
+      if(f > g) then join y x
+      else 
+         let pom = join f_right y in
+         if height f_left > height pom 
+            then Node (f, (height pom + 1), f_left, pom)
+            else Node (f, (height f_left + 1), pom, f_left)
+
+let add el x = 
+   join (Node (el, 0, Null, Null)) x
+
+let delete_min x =
+   match x with
+   | Null -> raise Empty
+   | Node (f, _, left, right) -> (f, join left right)
+
+let is_empty x = (x = Null)
